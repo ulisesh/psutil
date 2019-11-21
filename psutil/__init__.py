@@ -214,7 +214,7 @@ __all__ = [
     "cpu_times", "cpu_percent", "cpu_times_percent", "cpu_count",   # cpu
     "cpu_stats",  # "cpu_freq",
     "net_io_counters", "net_connections", "net_if_addrs",           # network
-    "net_if_stats",
+    #"net_if_stats",
     "disk_io_counters", "disk_partitions", "disk_usage",            # disk
     # "sensors_temperatures", "sensors_battery", "sensors_fans"     # sensors
     "users", "boot_time",                                           # others
@@ -2053,140 +2053,140 @@ disk_io_counters.cache_clear.__doc__ = "Clears nowrap argument cache"
 # =====================================================================
 
 
-def net_io_counters(pernic=False, nowrap=True):
-    """Return network I/O statistics as a namedtuple including
-    the following fields:
+# def net_io_counters(pernic=False, nowrap=True):
+#     """Return network I/O statistics as a namedtuple including
+#     the following fields:
 
-     - bytes_sent:   number of bytes sent
-     - bytes_recv:   number of bytes received
-     - packets_sent: number of packets sent
-     - packets_recv: number of packets received
-     - errin:        total number of errors while receiving
-     - errout:       total number of errors while sending
-     - dropin:       total number of incoming packets which were dropped
-     - dropout:      total number of outgoing packets which were dropped
-                     (always 0 on macOS and BSD)
+#      - bytes_sent:   number of bytes sent
+#      - bytes_recv:   number of bytes received
+#      - packets_sent: number of packets sent
+#      - packets_recv: number of packets received
+#      - errin:        total number of errors while receiving
+#      - errout:       total number of errors while sending
+#      - dropin:       total number of incoming packets which were dropped
+#      - dropout:      total number of outgoing packets which were dropped
+#                      (always 0 on macOS and BSD)
 
-    If *pernic* is True return the same information for every
-    network interface installed on the system as a dictionary
-    with network interface names as the keys and the namedtuple
-    described above as the values.
+#     If *pernic* is True return the same information for every
+#     network interface installed on the system as a dictionary
+#     with network interface names as the keys and the namedtuple
+#     described above as the values.
 
-    If *nowrap* is True it detects and adjust the numbers which overflow
-    and wrap (restart from 0) and add "old value" to "new value" so that
-    the returned numbers will always be increasing or remain the same,
-    but never decrease.
-    "disk_io_counters.cache_clear()" can be used to invalidate the
-    cache.
-    """
-    rawdict = _psplatform.net_io_counters()
-    if not rawdict:
-        return {} if pernic else None
-    if nowrap:
-        rawdict = _wrap_numbers(rawdict, 'psutil.net_io_counters')
-    if pernic:
-        for nic, fields in rawdict.items():
-            rawdict[nic] = _common.snetio(*fields)
-        return rawdict
-    else:
-        return _common.snetio(*[sum(x) for x in zip(*rawdict.values())])
-
-
-net_io_counters.cache_clear = functools.partial(
-    _wrap_numbers.cache_clear, 'psutil.net_io_counters')
-net_io_counters.cache_clear.__doc__ = "Clears nowrap argument cache"
+#     If *nowrap* is True it detects and adjust the numbers which overflow
+#     and wrap (restart from 0) and add "old value" to "new value" so that
+#     the returned numbers will always be increasing or remain the same,
+#     but never decrease.
+#     "disk_io_counters.cache_clear()" can be used to invalidate the
+#     cache.
+#     """
+#     rawdict = _psplatform.net_io_counters()
+#     if not rawdict:
+#         return {} if pernic else None
+#     if nowrap:
+#         rawdict = _wrap_numbers(rawdict, 'psutil.net_io_counters')
+#     if pernic:
+#         for nic, fields in rawdict.items():
+#             rawdict[nic] = _common.snetio(*fields)
+#         return rawdict
+#     else:
+#         return _common.snetio(*[sum(x) for x in zip(*rawdict.values())])
 
 
-def net_connections(kind='inet'):
-    """Return system-wide socket connections as a list of
-    (fd, family, type, laddr, raddr, status, pid) namedtuples.
-    In case of limited privileges 'fd' and 'pid' may be set to -1
-    and None respectively.
-    The *kind* parameter filters for connections that fit the
-    following criteria:
-
-    +------------+----------------------------------------------------+
-    | Kind Value | Connections using                                  |
-    +------------+----------------------------------------------------+
-    | inet       | IPv4 and IPv6                                      |
-    | inet4      | IPv4                                               |
-    | inet6      | IPv6                                               |
-    | tcp        | TCP                                                |
-    | tcp4       | TCP over IPv4                                      |
-    | tcp6       | TCP over IPv6                                      |
-    | udp        | UDP                                                |
-    | udp4       | UDP over IPv4                                      |
-    | udp6       | UDP over IPv6                                      |
-    | unix       | UNIX socket (both UDP and TCP protocols)           |
-    | all        | the sum of all the possible families and protocols |
-    +------------+----------------------------------------------------+
-
-    On macOS this function requires root privileges.
-    """
-    return _psplatform.net_connections(kind)
+# net_io_counters.cache_clear = functools.partial(
+#     _wrap_numbers.cache_clear, 'psutil.net_io_counters')
+# net_io_counters.cache_clear.__doc__ = "Clears nowrap argument cache"
 
 
-def net_if_addrs():
-    """Return the addresses associated to each NIC (network interface
-    card) installed on the system as a dictionary whose keys are the
-    NIC names and value is a list of namedtuples for each address
-    assigned to the NIC. Each namedtuple includes 5 fields:
+# def net_connections(kind='inet'):
+#     """Return system-wide socket connections as a list of
+#     (fd, family, type, laddr, raddr, status, pid) namedtuples.
+#     In case of limited privileges 'fd' and 'pid' may be set to -1
+#     and None respectively.
+#     The *kind* parameter filters for connections that fit the
+#     following criteria:
 
-     - family: can be either socket.AF_INET, socket.AF_INET6 or
-               psutil.AF_LINK, which refers to a MAC address.
-     - address: is the primary address and it is always set.
-     - netmask: and 'broadcast' and 'ptp' may be None.
-     - ptp: stands for "point to point" and references the
-            destination address on a point to point interface
-            (typically a VPN).
-     - broadcast: and *ptp* are mutually exclusive.
+#     +------------+----------------------------------------------------+
+#     | Kind Value | Connections using                                  |
+#     +------------+----------------------------------------------------+
+#     | inet       | IPv4 and IPv6                                      |
+#     | inet4      | IPv4                                               |
+#     | inet6      | IPv6                                               |
+#     | tcp        | TCP                                                |
+#     | tcp4       | TCP over IPv4                                      |
+#     | tcp6       | TCP over IPv6                                      |
+#     | udp        | UDP                                                |
+#     | udp4       | UDP over IPv4                                      |
+#     | udp6       | UDP over IPv6                                      |
+#     | unix       | UNIX socket (both UDP and TCP protocols)           |
+#     | all        | the sum of all the possible families and protocols |
+#     +------------+----------------------------------------------------+
 
-    Note: you can have more than one address of the same family
-    associated with each interface.
-    """
-    has_enums = sys.version_info >= (3, 4)
-    if has_enums:
-        import socket
-    rawlist = _psplatform.net_if_addrs()
-    rawlist.sort(key=lambda x: x[1])  # sort by family
-    ret = collections.defaultdict(list)
-    for name, fam, addr, mask, broadcast, ptp in rawlist:
-        if has_enums:
-            try:
-                fam = socket.AddressFamily(fam)
-            except ValueError:
-                if WINDOWS and fam == -1:
-                    fam = _psplatform.AF_LINK
-                elif (hasattr(_psplatform, "AF_LINK") and
-                        _psplatform.AF_LINK == fam):
-                    # Linux defines AF_LINK as an alias for AF_PACKET.
-                    # We re-set the family here so that repr(family)
-                    # will show AF_LINK rather than AF_PACKET
-                    fam = _psplatform.AF_LINK
-        if fam == _psplatform.AF_LINK:
-            # The underlying C function may return an incomplete MAC
-            # address in which case we fill it with null bytes, see:
-            # https://github.com/giampaolo/psutil/issues/786
-            separator = ":" if POSIX else "-"
-            while addr.count(separator) < 5:
-                addr += "%s00" % separator
-        ret[name].append(_common.snicaddr(fam, addr, mask, broadcast, ptp))
-    return dict(ret)
+#     On macOS this function requires root privileges.
+#     """
+#     return _psplatform.net_connections(kind)
 
 
-def net_if_stats():
-    """Return information about each NIC (network interface card)
-    installed on the system as a dictionary whose keys are the
-    NIC names and value is a namedtuple with the following fields:
+# def net_if_addrs():
+#     """Return the addresses associated to each NIC (network interface
+#     card) installed on the system as a dictionary whose keys are the
+#     NIC names and value is a list of namedtuples for each address
+#     assigned to the NIC. Each namedtuple includes 5 fields:
 
-     - isup: whether the interface is up (bool)
-     - duplex: can be either NIC_DUPLEX_FULL, NIC_DUPLEX_HALF or
-               NIC_DUPLEX_UNKNOWN
-     - speed: the NIC speed expressed in mega bits (MB); if it can't
-              be determined (e.g. 'localhost') it will be set to 0.
-     - mtu: the maximum transmission unit expressed in bytes.
-    """
-    return _psplatform.net_if_stats()
+#      - family: can be either socket.AF_INET, socket.AF_INET6 or
+#                psutil.AF_LINK, which refers to a MAC address.
+#      - address: is the primary address and it is always set.
+#      - netmask: and 'broadcast' and 'ptp' may be None.
+#      - ptp: stands for "point to point" and references the
+#             destination address on a point to point interface
+#             (typically a VPN).
+#      - broadcast: and *ptp* are mutually exclusive.
+
+#     Note: you can have more than one address of the same family
+#     associated with each interface.
+#     """
+#     has_enums = sys.version_info >= (3, 4)
+#     if has_enums:
+#         import socket
+#     rawlist = _psplatform.net_if_addrs()
+#     rawlist.sort(key=lambda x: x[1])  # sort by family
+#     ret = collections.defaultdict(list)
+#     for name, fam, addr, mask, broadcast, ptp in rawlist:
+#         if has_enums:
+#             try:
+#                 fam = socket.AddressFamily(fam)
+#             except ValueError:
+#                 if WINDOWS and fam == -1:
+#                     fam = _psplatform.AF_LINK
+#                 elif (hasattr(_psplatform, "AF_LINK") and
+#                         _psplatform.AF_LINK == fam):
+#                     # Linux defines AF_LINK as an alias for AF_PACKET.
+#                     # We re-set the family here so that repr(family)
+#                     # will show AF_LINK rather than AF_PACKET
+#                     fam = _psplatform.AF_LINK
+#         if fam == _psplatform.AF_LINK:
+#             # The underlying C function may return an incomplete MAC
+#             # address in which case we fill it with null bytes, see:
+#             # https://github.com/giampaolo/psutil/issues/786
+#             separator = ":" if POSIX else "-"
+#             while addr.count(separator) < 5:
+#                 addr += "%s00" % separator
+#         ret[name].append(_common.snicaddr(fam, addr, mask, broadcast, ptp))
+#     return dict(ret)
+
+
+# def net_if_stats():
+#     """Return information about each NIC (network interface card)
+#     installed on the system as a dictionary whose keys are the
+#     NIC names and value is a namedtuple with the following fields:
+
+#      - isup: whether the interface is up (bool)
+#      - duplex: can be either NIC_DUPLEX_FULL, NIC_DUPLEX_HALF or
+#                NIC_DUPLEX_UNKNOWN
+#      - speed: the NIC speed expressed in mega bits (MB); if it can't
+#               be determined (e.g. 'localhost') it will be set to 0.
+#      - mtu: the maximum transmission unit expressed in bytes.
+#     """
+#     return _psplatform.net_if_stats()
 
 
 # =====================================================================
@@ -2246,21 +2246,21 @@ if hasattr(_psplatform, "sensors_fans"):
 
 
 # Linux, Windows, FreeBSD, macOS
-if hasattr(_psplatform, "sensors_battery"):
+# if hasattr(_psplatform, "sensors_battery"):
 
-    def sensors_battery():
-        """Return battery information. If no battery is installed
-        returns None.
+#     def sensors_battery():
+#         """Return battery information. If no battery is installed
+#         returns None.
 
-         - percent: battery power left as a percentage.
-         - secsleft: a rough approximation of how many seconds are left
-                     before the battery runs out of power. May be
-                     POWER_TIME_UNLIMITED or POWER_TIME_UNLIMITED.
-         - power_plugged: True if the AC power cable is connected.
-        """
-        return _psplatform.sensors_battery()
+#          - percent: battery power left as a percentage.
+#          - secsleft: a rough approximation of how many seconds are left
+#                      before the battery runs out of power. May be
+#                      POWER_TIME_UNLIMITED or POWER_TIME_UNLIMITED.
+#          - power_plugged: True if the AC power cable is connected.
+#         """
+#         return _psplatform.sensors_battery()
 
-    __all__.append("sensors_battery")
+#     __all__.append("sensors_battery")
 
 
 # =====================================================================

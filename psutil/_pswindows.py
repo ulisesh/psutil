@@ -236,7 +236,7 @@ def swap_memory():
 # =====================================================================
 
 
-disk_io_counters = cext.disk_io_counters
+# disk_io_counters = cext.disk_io_counters
 
 
 def disk_usage(path):
@@ -314,64 +314,64 @@ def cpu_freq():
 # =====================================================================
 
 
-def net_connections(kind, _pid=-1):
-    """Return socket connections.  If pid == -1 return system-wide
-    connections (as opposed to connections opened by one process only).
-    """
-    if kind not in conn_tmap:
-        raise ValueError("invalid %r kind argument; choose between %s"
-                         % (kind, ', '.join([repr(x) for x in conn_tmap])))
-    families, types = conn_tmap[kind]
-    rawlist = cext.net_connections(_pid, families, types)
-    ret = set()
-    for item in rawlist:
-        fd, fam, type, laddr, raddr, status, pid = item
-        if laddr:
-            laddr = _common.addr(*laddr)
-        if raddr:
-            raddr = _common.addr(*raddr)
-        status = TCP_STATUSES[status]
-        fam = sockfam_to_enum(fam)
-        type = socktype_to_enum(type)
-        if _pid == -1:
-            nt = _common.sconn(fd, fam, type, laddr, raddr, status, pid)
-        else:
-            nt = _common.pconn(fd, fam, type, laddr, raddr, status)
-        ret.add(nt)
-    return list(ret)
+# def net_connections(kind, _pid=-1):
+#     """Return socket connections.  If pid == -1 return system-wide
+#     connections (as opposed to connections opened by one process only).
+#     """
+#     if kind not in conn_tmap:
+#         raise ValueError("invalid %r kind argument; choose between %s"
+#                          % (kind, ', '.join([repr(x) for x in conn_tmap])))
+#     families, types = conn_tmap[kind]
+#     rawlist = cext.net_connections(_pid, families, types)
+#     ret = set()
+#     for item in rawlist:
+#         fd, fam, type, laddr, raddr, status, pid = item
+#         if laddr:
+#             laddr = _common.addr(*laddr)
+#         if raddr:
+#             raddr = _common.addr(*raddr)
+#         status = TCP_STATUSES[status]
+#         fam = sockfam_to_enum(fam)
+#         type = socktype_to_enum(type)
+#         if _pid == -1:
+#             nt = _common.sconn(fd, fam, type, laddr, raddr, status, pid)
+#         else:
+#             nt = _common.pconn(fd, fam, type, laddr, raddr, status)
+#         ret.add(nt)
+#     return list(ret)
 
 
-def net_if_stats():
-    """Get NIC stats (isup, duplex, speed, mtu)."""
-    ret = {}
-    rawdict = cext.net_if_stats()
-    for name, items in rawdict.items():
-        if not PY3:
-            assert isinstance(name, unicode), type(name)
-            name = py2_strencode(name)
-        isup, duplex, speed, mtu = items
-        if hasattr(_common, 'NicDuplex'):
-            duplex = _common.NicDuplex(duplex)
-        ret[name] = _common.snicstats(isup, duplex, speed, mtu)
-    return ret
+# def net_if_stats():
+#     """Get NIC stats (isup, duplex, speed, mtu)."""
+#     ret = {}
+#     rawdict = cext.net_if_stats()
+#     for name, items in rawdict.items():
+#         if not PY3:
+#             assert isinstance(name, unicode), type(name)
+#             name = py2_strencode(name)
+#         isup, duplex, speed, mtu = items
+#         if hasattr(_common, 'NicDuplex'):
+#             duplex = _common.NicDuplex(duplex)
+#         ret[name] = _common.snicstats(isup, duplex, speed, mtu)
+#     return ret
 
 
-def net_io_counters():
-    """Return network I/O statistics for every network interface
-    installed on the system as a dict of raw tuples.
-    """
-    ret = cext.net_io_counters()
-    return dict([(py2_strencode(k), v) for k, v in ret.items()])
+# def net_io_counters():
+#     """Return network I/O statistics for every network interface
+#     installed on the system as a dict of raw tuples.
+#     """
+#     ret = cext.net_io_counters()
+#     return dict([(py2_strencode(k), v) for k, v in ret.items()])
 
 
-def net_if_addrs():
-    """Return the addresses associated to each NIC."""
-    ret = []
-    for items in cext.net_if_addrs():
-        items = list(items)
-        items[0] = py2_strencode(items[0])
-        ret.append(items)
-    return ret
+# def net_if_addrs():
+#     """Return the addresses associated to each NIC."""
+#     ret = []
+#     for items in cext.net_if_addrs():
+#         items = list(items)
+#         items[0] = py2_strencode(items[0])
+#         ret.append(items)
+#     return ret
 
 
 # =====================================================================
@@ -379,24 +379,24 @@ def net_if_addrs():
 # =====================================================================
 
 
-def sensors_battery():
-    """Return battery information."""
-    # For constants meaning see:
-    # https://msdn.microsoft.com/en-us/library/windows/desktop/
-    #     aa373232(v=vs.85).aspx
-    acline_status, flags, percent, secsleft = cext.sensors_battery()
-    power_plugged = acline_status == 1
-    no_battery = bool(flags & 128)
-    charging = bool(flags & 8)
+# def sensors_battery():
+#     """Return battery information."""
+#     # For constants meaning see:
+#     # https://msdn.microsoft.com/en-us/library/windows/desktop/
+#     #     aa373232(v=vs.85).aspx
+#     acline_status, flags, percent, secsleft = cext.sensors_battery()
+#     power_plugged = acline_status == 1
+#     no_battery = bool(flags & 128)
+#     charging = bool(flags & 8)
 
-    if no_battery:
-        return None
-    if power_plugged or charging:
-        secsleft = _common.POWER_TIME_UNLIMITED
-    elif secsleft == -1:
-        secsleft = _common.POWER_TIME_UNKNOWN
+#     if no_battery:
+#         return None
+#     if power_plugged or charging:
+#         secsleft = _common.POWER_TIME_UNLIMITED
+#     elif secsleft == -1:
+#         secsleft = _common.POWER_TIME_UNKNOWN
 
-    return _common.sbattery(percent, secsleft, power_plugged)
+#     return _common.sbattery(percent, secsleft, power_plugged)
 
 
 # =====================================================================
@@ -912,9 +912,9 @@ class Process(object):
                 ret.add(ntuple)
         return list(ret)
 
-    @wrap_exceptions
-    def connections(self, kind='inet'):
-        return net_connections(kind, _pid=self.pid)
+    #@wrap_exceptions
+    #def connections(self, kind='inet'):
+    #    return net_connections(kind, _pid=self.pid)
 
     @wrap_exceptions
     def nice_get(self):
